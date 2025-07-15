@@ -22,7 +22,7 @@ const client = new MongoClient(MONGODB_URI);
 const db = client.db(DB_NAME); // 데이터베이스 선택
 const collection = db.collection("users"); // 컬렉션 선택
 
-// 데이터 읽기 - GET
+// 데이터 읽기
 app.get('/users', async (req, res) => {
     try {
         // Cursor 객체: 데이터를 한개씩 순차적으로 가져와 document를 반환. 한번에 다 가져오지 않고 순차적으로 반환.
@@ -42,38 +42,7 @@ app.get('/users', async (req, res) => {
     }
 });
 
-// 특정데이터 읽기 - GET
-app.get('/users/:id', async (req, res) => {
-    try {
-        const { id } = req.params; // string
-        const data = req.body;
-
-        const user = await collection.findOne({
-            _id: new ObjectId(id)
-        }, {
-            projection: { name: 1, _id: 1 }
-        });
-
-
-        // Cursor 객체: 데이터를 한개씩 순차적으로 가져와 document를 반환. 한번에 다 가져오지 않고 순차적으로 반환.
-        //const users = await collection.find().toArray();
-        //console.log("🚀 users.length:", users.length);
-        //console.log("🚀 users:", users);
-        // 응답
-        res.status(200).json(user);
-
-    } catch (error) {
-        console.log(`fetch error: ${error}`);
-        // 응답
-        res.status(500).json({
-            message: "Error fetching user11",
-            error: error.message
-        });
-    }
-});
-
-
-// 데이터 추가 - POST
+// 데이터 추가
 app.post("/users", async (req, res) => {
     // req.body: object
     //const name = req.body.name
@@ -98,7 +67,7 @@ app.post("/users", async (req, res) => {
     }
 })
 
-// 데이터 수정 - PUT
+// 데이터 수정
 app.put("/users/:id", async (req, res) => {
 
     try {
@@ -131,12 +100,14 @@ app.put("/users/:id", async (req, res) => {
     }
 })
 
-// 데이터 삭제 - DELETE
+
+
+// 데이터 삭제
 app.delete("/users/:id", async (req, res) => {
 
     try {
         const { id } = req.params; // string
-
+        // di값을 기준으로 사용자 삭제
         const result = await collection.deleteOne({
             _id: new ObjectId(id)
         });
@@ -145,15 +116,12 @@ app.delete("/users/:id", async (req, res) => {
             // 삭제된 문서가 있는경우 응답
             res.status(200).json({
                 message: "User deleted",
-                id
+                id   // id: id  같을경우 생략가능
             });
             return;
         }
         // 삭제된 문서가 없는 경우 응답
-        res.status(404).json({
-            message: "User not found"
-        });
-
+        res.status(404).json({message: "User not found or no deleted"});
 
     } catch (error) {
         console.log(`error deleting user: ${error}`);
@@ -164,6 +132,9 @@ app.delete("/users/:id", async (req, res) => {
         });
     }
 })
+
+
+
 
 const connectDB = async () => {
     try {
